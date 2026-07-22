@@ -8,6 +8,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Stock from "@/pages/Stock";
 import Plano from "@/pages/Plano";
+import Entregas from "@/pages/Entregas";
 import ComingSoon from "@/pages/ComingSoon";
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
               <Route index element={<Dashboard />} />
               <Route path="stock" element={<Stock />} />
               <Route path="plano" element={<Plano />} />
-              <Route path="entregas" element={<ComingSoon title="Entregas" />} />
+              <Route path="entregas" element={<Entregas />} />
               <Route path="mobiliario" element={<ComingSoon title="Mobiliario" />} />
               <Route path="estadisticas" element={<ComingSoon title="Estadísticas" />} />
               <Route path="configuracion" element={<ComingSoon title="Configuración" />} />

@@ -63,6 +63,13 @@ export const ZONAS_PLANO = [
 export const zoneColor = (zona) =>
   ZONAS_PLANO.find((z) => z.name === zona)?.color || "#0066B1";
 
+export const ESTADOS_ENTREGA = [
+  { name: "Pendiente", color: "#B26A00", bg: "#FFF4E5" },
+  { name: "En preparación", color: "#0066B1", bg: "#EAF3FB" },
+  { name: "Listo para entregar", color: "#1B8A4B", bg: "#E8F5EC" },
+  { name: "Entregado", color: "#2B2B2B", bg: "#EEF0F3" },
+];
+
 export const NAV_SECONDARY = [
   { key: "mobiliario", label: "Mobiliario", path: "/mobiliario", icon: "Armchair" },
   { key: "estadisticas", label: "Estadísticas", path: "/estadisticas", icon: "BarChart3" },

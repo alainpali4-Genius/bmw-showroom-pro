@@ -1,0 +1,45 @@
+{
+  "summary": "Phase 3 (Entregas) tested end-to-end. Backend: 8/8 pytest cases pass (auth guard, GET auto-provisions, PUT validates estado + persists split between entrega and vehicle collections, auto-appear/disappear on ubicacion change). Frontend: KPIs correct (Hoy=1, Pendientes=0, Listas=1, Entregadas=0), 4 columns render, buscador + filters (fecha/estado/modelo/comercial/cliente) + Limpiar work, DnD via pointer events successfully moves card between columns AND persists via PUT /api/entregas. Edit dialog opens on short click and saves. ONE bug found: dialog crashes with 'Cannot read properties of null (reading marca)' after save/close because item becomes null while form state remains.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "EntregaEditDialog",
+        "issue": "Uncaught TypeError: Cannot read properties of null (reading 'marca'). After clicking Guardar, parent sets editItem=null but the dialog's internal `form` state is still truthy, so the `if (!form) return null` guard doesn't trip and JSX still references `item.marca`/`item.modelo`/`item.vin_corto`. Same happens when closing via Cancelar. Reproduces 100% of the time — leaves the app in an unusable error overlay until reload.",
+        "selector": "[data-testid=\"entrega-edit-dialog\"]",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_entregas.py",
+    "/app/test_reports/pytest/pytest_entregas.xml"
+  ],
+  "action_items": [
+    "Fix EntregaEditDialog null-item crash: either (a) guard on `!item` in addition to `!form`, or (b) reset `form` to null when `item` becomes null / dialog closes, or (c) keep a local copy of item alongside form so JSX never dereferences a null parent prop. Recommended fix: change `if (!form) return null;` to `if (!form || !item) return null;` and/or reset form in useEffect when !open."
+  ],
+  "critical_code_review_comments": [
+    "EntregaEditDialog: rendering depends on parent-owned `item` which can become null while dialog is still mounted during Radix close animation — the guard clause only checks `form`. Must also guard on `item`.",
+    "entregas.py _merge: fine (excludes _id) but note that `_clean(v)` is called on vehicles inside the async comprehension; safe. No issues.",
+    "PUT /api/entregas/{vehicle_id}: correctly splits fields between entrega and vehicle collections and validates estado. Good.",
+    "Entregas.js: pointer DnD implementation is clean and correctly uses >5px threshold to distinguish click vs drag. Optimistic update + refresh on both success and error is a good pattern."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_entregas.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "90%"
+  },
+  "test_credentials": "alainpali4@gmail.com / BMWmomentum2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Test-created vehicles all cleaned up. X5 (c97357b4...) comercial restored to 'Ana Torres' and observaciones cleared. Current seed: 2 entregas — X5 (En preparación, 2026-07-23, Ana Torres) and Serie 4 (Listo para entregar, 2026-07-22 today, Carlos Ruiz).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend Entregas API is solid — no need to retest unless code changes. Focus retest on the EntregaEditDialog fix: open dialog on any card, click Guardar, verify NO uncaught error overlay appears and dialog closes cleanly. Also verify Cancelar path. Then confirm DnD still works. Today's date used by frontend logic is 2026-07-22.",
+  "rca of the issue": "EntregaEditDialog: On save, `submit()` calls `onOpenChange(false)`, which in parent Entregas.js runs `(o) => !o && setEditItem(null)` making `item` null. Radix Dialog keeps content mounted during the close transition (~150ms). During that transition, React re-renders EntregaEditDialog with item=null but form still holds the previous object → the guard `if (!form) return null;` passes → JSX evaluates `{item.marca}` → TypeError. Reproduction: (1) Login → Entregas, (2) click any card, (3) click Guardar. Mitigation: change guard to `if (!form || !item) return null;` OR clear form in an effect keyed on `open`: `useEffect(() => { if (!open) setForm(null); }, [open]);`"
+}

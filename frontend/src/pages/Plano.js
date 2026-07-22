@@ -691,9 +691,3 @@ export default function Plano() {
     </div>
   );
 }
-ats"] });
-        }}
-      />
-    </div>
-  );
-}
