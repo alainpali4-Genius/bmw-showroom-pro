@@ -147,7 +147,10 @@ async def scan_vin(body: VinScanBody, user: dict = Depends(get_current_user)):
     img = body.image_base64
     if "," in img and img.strip().startswith("data:"):
         img = img.split(",", 1)[1]
-    return await extract_vin_from_image(img)
+    try:
+        return await extract_vin_from_image(img)
+    except Exception:
+        return {"vin": "", "vin_corto": "", "marca": "BMW", "modelo": "", "motor": "", "categoria": ""}
 
 
 # ---------- Import / Export ----------

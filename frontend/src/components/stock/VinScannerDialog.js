@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Camera, Loader2, ScanLine } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import api, { apiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -47,6 +47,7 @@ export default function VinScannerDialog({ open, onOpenChange, onScanned }) {
           <DialogTitle className="font-display font-light text-2xl flex items-center gap-2">
             <ScanLine className="h-5 w-5 text-bmw-blue" /> Escanear VIN
           </DialogTitle>
+          <DialogDescription className="sr-only">Captura de la etiqueta del VIN con la cámara</DialogDescription>
         </DialogHeader>
         <p className="text-sm text-bmw-soft/70 -mt-1">
           Haz una foto de la etiqueta del bastidor. La IA leerá el VIN y rellenará los datos.
