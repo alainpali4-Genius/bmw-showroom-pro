@@ -12,11 +12,14 @@ from starlette.middleware.cors import CORSMiddleware
 from db import client, db
 from auth import auth_router, seed_admin
 from vehicles import vehicles_router
+from plano import plano_router, register_plano_ws
 
 app = FastAPI(title="BMW Momentum Showroom API")
 
 app.include_router(auth_router)
 app.include_router(vehicles_router)
+app.include_router(plano_router)
+register_plano_ws(app)
 
 
 @app.get("/api/")

@@ -1,0 +1,34 @@
+{
+  "summary": "Phase 2 (Plano de Exposición) fully tested end-to-end. Backend: 18/18 pytest tests pass covering GET/POST/DELETE plazas, PUT save (upsert + delete-not-included + orphan vehicle cleanup), assign with all 6 zone->ubicacion mappings (Entregas->Entrega), unassign->Stock, auth guards (401 without cookie), and WebSocket /api/ws/plano connection + plano_update broadcast on mutation. Frontend E2E: login -> nav-plano -> canvas loads -> toggle edit -> add/duplicate/delete plaza -> rename via plaza-name-input -> change zone (Taller) -> undo/redo/zoom all work without console errors -> drag&drop of Serie 3 from P1 to P2 successfully reassigns vehicle (verified via DOM re-parenting after refetch) -> short click on vehicle opens VehicleFormDialog with correct data. All acceptance criteria met.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Plano canvas", "issues": ["Initial WebSocket handshake occasionally logs 'closed before established' warning in the browser console; auto-reconnect and 20s polling fallback keep data in sync so no functional impact. Backend WS itself accepts connections and broadcasts correctly (verified via pytest)."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_plano.py",
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/pytest_plano.xml"
+  ],
+  "action_items": [
+    "Optional: silence the transient 'WebSocket closed before established' warning by delaying WS.close on onerror or checking readyState before scheduling reconnect."
+  ],
+  "critical_code_review_comments": [
+    "plano.py correctly excludes MongoDB _id via _clean() before returning.",
+    "PUT /api/plano/save is properly authoritative: it upserts by id and deletes plazas not present in payload, then cleans orphan vehicle.plaza_id/plaza fields. Verified.",
+    "ZONE_UBICACION map correctly translates 'Entregas' -> 'Entrega' (singular) matching the Ubicación filter used elsewhere.",
+    "Plano.js pointer interaction: distinguishes short-click (<6px) vs drag well; ghost is pointer-events:none so document.elementFromPoint hits underlying plaza correctly (verified in E2E).",
+    "ConnectionManager.broadcast iterates over list(self.active) and drops dead sockets - safe.",
+    "Minor: Plano.js WebSocket handler does not clear reconnect timer inside onerror path; benign but could cause double reconnect attempts."
+  ],
+  "updated_files": ["/app/backend/tests/test_plano.py"],
+  "success_rate": {"backend": "100% (18/18 plano + 16/16 phase1)", "frontend": "100% (all Plano flows: nav, edit toggle, add/duplicate/delete, rename, zone change, undo/redo, zoom, drag&drop reassignment, short-click opens ficha)"},
+  "test_credentials": "alainpali4@gmail.com / BMWmomentum2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Tests create TEST_-prefixed plazas and a TEST_PLANO_V vehicle; all cleaned up in fixtures/finally. Verified no residual TEST_ data remains after run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Plano backend tests at /app/backend/tests/test_plano.py use module-scoped auth_session + a shared test_vehicle fixture; WebSocket test uses `websockets` library (16.1.1) against wss:// derived from REACT_APP_BACKEND_URL and skips gracefully if ingress blocks WS (currently works). Frontend D&D uses custom pointer events (not HTML5 DnD), so playwright must use page.mouse.down/move-in-steps/up on [data-vehicle-id]; a small initial move (~10px) is required before the stepped drag so distance>6px threshold triggers drag instead of click. Short-click threshold is 6px."
+}

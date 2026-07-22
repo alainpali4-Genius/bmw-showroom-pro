@@ -7,6 +7,7 @@ import AppShell from "@/components/layout/AppShell";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Stock from "@/pages/Stock";
+import Plano from "@/pages/Plano";
 import ComingSoon from "@/pages/ComingSoon";
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="stock" element={<Stock />} />
-              <Route path="plano" element={<ComingSoon title="Plano de Exposición" />} />
+              <Route path="plano" element={<Plano />} />
               <Route path="entregas" element={<ComingSoon title="Entregas" />} />
               <Route path="mobiliario" element={<ComingSoon title="Mobiliario" />} />
               <Route path="estadisticas" element={<ComingSoon title="Estadísticas" />} />

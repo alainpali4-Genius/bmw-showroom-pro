@@ -51,6 +51,18 @@ export const NAV_MAIN = [
   { key: "entregas", label: "Entregas", path: "/entregas", icon: "PackageCheck" },
 ];
 
+export const ZONAS_PLANO = [
+  { name: "Exposición", color: "#0066B1" },
+  { name: "Stock Exposición", color: "#5BC2E7" },
+  { name: "Taller", color: "#2B2B2B" },
+  { name: "Terraza", color: "#1B8A4B" },
+  { name: "Entreplanta", color: "#B26A00" },
+  { name: "Entregas", color: "#E7222E" },
+];
+
+export const zoneColor = (zona) =>
+  ZONAS_PLANO.find((z) => z.name === zona)?.color || "#0066B1";
+
 export const NAV_SECONDARY = [
   { key: "mobiliario", label: "Mobiliario", path: "/mobiliario", icon: "Armchair" },
   { key: "estadisticas", label: "Estadísticas", path: "/estadisticas", icon: "BarChart3" },

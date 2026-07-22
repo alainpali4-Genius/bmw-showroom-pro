@@ -38,6 +38,7 @@ class VehicleBody(BaseModel):
     observaciones: str = ""
     ubicacion: str = "Stock"
     plaza: str = ""
+    plaza_id: str = ""
     estado: str = "Disponible"
 
 
