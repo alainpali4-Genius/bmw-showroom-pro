@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 3 frontend-only tests for Plano de Exposición new features + regressions. All 9 requested items verified successfully. Stats coherent (6/1/5/2 matching 6 plazas / 1 occupied Serie 3 / 5 free / 2 unassigned Serie 4+X5). Mini-map renders and viewport rectangle visible. Fit-button works (auto-fit already applied on load, no additional zoom change when scale already correct). Search: single-match (VIN WBA5R71090FH12345) applies plaza-highlight ring on Serie 3's plaza and zooms in. Multi-match ('Serie') shows 2 buttons; clicking a result centers plano. Unassigned-vehicle search triggers the expected toast «está en la bandeja Sin plaza» and does not break the app. Full edit-mode regression passes: toggle-edit, add (6->7), rename via plaza-name-input, zone select present, duplicate (7->8), undo, redo, delete (7->6), zoom-in/zoom-out change scale (180%->216%->138%). Drag&drop from tray to an empty plaza correctly reassigns the vehicle (verified via /api/vehicles: plaza_id and ubicacion updated). Short click on assigned vehicle opens vehicle-form-dialog. No console errors; only pre-existing WS 'closed before established' warning and DialogContent aria-describedby a11y warnings.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Plano search", "issues": ["When user types a query that resolves to a SINGLE unassigned vehicle, runSearch fires on every keystroke and each keystroke that already matches a single vehicle calls focusVehicle -> toast. Result: up to 8 duplicate toasts stack during typing of a full VIN. Consider debouncing runSearch (~200ms) or deduplicating toast IDs."]},
+      {"screen": "VehicleFormDialog", "issues": ["Radix Dialog warning: Missing `Description` or `aria-describedby={undefined}` for DialogContent (accessibility; not functional)."]},
+      {"screen": "Plano canvas", "issues": ["Pre-existing WS 'closed before established' warning on first mount (already documented in iteration_2)."]}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_plano.py", "/app/test_reports/pytest/pytest_plano.xml"],
+  "action_items": [
+    "(Optional) Debounce runSearch or guard focusVehicle to fire once per stable query to avoid stacking toasts for unassigned vehicles.",
+    "(Optional) Add DialogDescription (or aria-describedby) to VehicleFormDialog to silence Radix a11y warning."
+  ],
+  "critical_code_review_comments": [
+    "stats useMemo correctly derives total/ocupadas/libres/sinPlaza from plazas + vehicleByPlaza + unassigned (Plano.js:514-518).",
+    "visiblePlazas culling preserves selectedId + highlightId so focused plaza is never culled out of view (Plano.js:520-528).",
+    "fitToScreen and focusVehicle both use clamp(scale, 0.2..2.5) and center offset using vpSize; safe against empty plaza list.",
+    "renderMiniMap correctly maps world->minimap coords and click sets offset so the world coord under the click becomes viewport center; visible viewport rectangle drawn from (-offset/scale).",
+    "runSearch auto-focuses on single match, but calls focusVehicle on every keystroke that leaves exactly one match -> stacking toasts for unassigned. Minor UX bug.",
+    "Pinch handler is gated by modeRef.current === 'edit' as required."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "not tested (per request)", "frontend": "100% (9/9 requested scenarios)"},
+  "test_credentials": "alainpali4@gmail.com / BMWmomentum2026 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "During edit-mode regression the test created and later deleted transient plazas (TEST_PZ, TEST_PZ·). At end of the run a cleanup step accidentally saved an empty plazas array; environment was immediately RESTORED via /api/plano/save with 6 canonical plazas (P1..P6 across Exposición/Stock Exposición/Terraza/Taller) and Serie 3 reassigned to P2 via /api/plano/assign. Final state verified: 3 vehicles, 1 en exposición (Serie 3 -> P2), 2 sin plaza (Serie 4, X5). Environment ready for next iteration.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Plano state was restored to 6 plazas (P1..P6) and Serie 3 -> P2 at end of run. If seed changes are desired, expose an admin 'reset plano' endpoint. D&D uses custom pointer events (page.mouse.down + initial >6px move + steps + up). Search input triggers on every keystroke and can spam toasts when the query converges to a single unassigned vehicle."
+}

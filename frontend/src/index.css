@@ -37,6 +37,12 @@ h1, h2, h3, h4, .font-display { font-family: 'Outfit', sans-serif; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .animate-fade-up { animation: fadeInUp 0.4s ease-out both; }
 
+@keyframes plazaPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(231,34,46,0.9), 0 12px 34px rgb(0 0 0 / 0.18); }
+  50% { box-shadow: 0 0 0 7px rgba(231,34,46,0.25), 0 12px 34px rgb(0 0 0 / 0.18); }
+}
+.plaza-highlight { animation: plazaPulse 1s ease-in-out infinite; }
+
 @layer base {
   :root {
     --background: 0 0% 100%;

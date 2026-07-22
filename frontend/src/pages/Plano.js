@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Pencil, Check, Plus, ZoomIn, ZoomOut, Undo2, Redo2, AlignHorizontalJustifyStart,
-  Loader2, Move, Maximize,
+  Loader2, Move, Maximize, Search, Frame,
 } from "lucide-react";
 import api, { apiError } from "@/lib/api";
 import { toast } from "sonner";
@@ -12,9 +12,21 @@ import PlazaInspector from "@/components/plano/PlazaInspector";
 import VehicleCard from "@/components/plano/VehicleCard";
 import VehicleFormDialog from "@/components/stock/VehicleFormDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { zoneColor } from "@/lib/constants";
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function StatChip({ label, value, dot, testid }) {
+  return (
+    <div data-testid={testid} className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-border shadow-soft">
+      {dot && <span className="h-2 w-2 rounded-full" style={{ background: dot }} />}
+      <span className="text-sm font-semibold tabular-nums">{value}</span>
+      <span className="text-xs text-bmw-soft/60">{label}</span>
+    </div>
+  );
+}
 
 export default function Plano() {
   const qc = useQueryClient();
@@ -36,6 +48,13 @@ export default function Plano() {
   const [past, setPast] = useState([]);
   const [future, setFuture] = useState([]);
   const [ficha, setFicha] = useState(null);
+  const [vpSize, setVpSize] = useState({ w: 800, h: 600 });
+  const [highlightId, setHighlightId] = useState(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const pinch = useRef(null);
+  const highlightTimer = useRef(null);
+  const fitted = useRef(false);
 
   // Refs espejo para handlers de ventana
   const scaleRef = useRef(scale); scaleRef.current = scale;
@@ -288,6 +307,149 @@ export default function Plano() {
     setScale(s1);
   };
 
+  const fitToScreen = useCallback(() => {
+    const ps = plazasRef.current;
+    if (!ps.length) return;
+    const minX = Math.min(...ps.map((p) => p.x));
+    const minY = Math.min(...ps.map((p) => p.y));
+    const maxX = Math.max(...ps.map((p) => p.x + p.w));
+    const maxY = Math.max(...ps.map((p) => p.y + p.h));
+    const pad = 60;
+    const bw = maxX - minX + pad * 2, bh = maxY - minY + pad * 2;
+    const s = clamp(Math.min(vpSize.w / bw, vpSize.h / bh), 0.2, 2.5);
+    setScale(s);
+    setOffset({
+      x: vpSize.w / 2 - (minX + (maxX - minX) / 2) * s,
+      y: vpSize.h / 2 - (minY + (maxY - minY) / 2) * s,
+    });
+  }, [vpSize]);
+
+  const focusVehicle = (v) => {
+    setResults([]); setQuery("");
+    const plaza = plazasRef.current.find((p) => p.id === v.plaza_id);
+    if (!plaza) {
+      if (modeRef.current !== "normal") setMode("normal");
+      toast.info(`${v.modelo || "Vehículo"} está en la bandeja «Sin plaza»`);
+      return;
+    }
+    const s = clamp(Math.min(vpSize.w / (plaza.w * 2), vpSize.h / (plaza.h * 1.4)), 0.5, 1.8);
+    setScale(s);
+    setOffset({
+      x: vpSize.w / 2 - (plaza.x + plaza.w / 2) * s,
+      y: vpSize.h / 2 - (plaza.y + plaza.h / 2) * s,
+    });
+    setHighlightId(plaza.id);
+    clearTimeout(highlightTimer.current);
+    highlightTimer.current = setTimeout(() => setHighlightId(null), 3000);
+  };
+
+  const runSearch = (q) => {
+    setQuery(q);
+    const s = q.trim().toLowerCase();
+    if (!s) { setResults([]); return; }
+    const r = vehiclesRef.current.filter((v) =>
+      (v.modelo || "").toLowerCase().includes(s) ||
+      (v.vin || "").toLowerCase().includes(s) ||
+      (v.vin_corto || "").toLowerCase().includes(s) ||
+      (v.matricula || "").toLowerCase().includes(s)
+    ).slice(0, 8);
+    setResults(r);
+    if (r.length === 1) focusVehicle(r[0]);
+  };
+
+  // Tamaño del viewport (rendimiento + fit)
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const update = () => setVpSize({ w: vp.clientWidth, h: vp.clientHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(vp);
+    return () => ro.disconnect();
+  }, []);
+
+  // Auto-ajustar una vez al cargar
+  useEffect(() => {
+    if (!fitted.current && plazas.length > 0 && vpSize.w > 100) {
+      fitted.current = true;
+      fitToScreen();
+    }
+  }, [plazas, vpSize, fitToScreen]);
+
+  // Zoom por pellizco (solo en modo edición; bloqueado en modo normal)
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+    const onStart = (e) => {
+      if (modeRef.current !== "edit" || e.touches.length !== 2) return;
+      interaction.current = null;
+      const r = vp.getBoundingClientRect();
+      pinch.current = {
+        d: dist(e.touches), s: scaleRef.current,
+        mx: (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left,
+        my: (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top,
+        ox: offsetRef.current.x, oy: offsetRef.current.y,
+      };
+      e.preventDefault();
+    };
+    const onMove = (e) => {
+      if (!pinch.current || e.touches.length !== 2) return;
+      e.preventDefault();
+      const s1 = clamp(pinch.current.s * (dist(e.touches) / pinch.current.d), 0.2, 2.5);
+      const k = s1 / pinch.current.s;
+      setScale(s1);
+      setOffset({
+        x: pinch.current.mx - (pinch.current.mx - pinch.current.ox) * k,
+        y: pinch.current.my - (pinch.current.my - pinch.current.oy) * k,
+      });
+    };
+    const onEnd = (e) => { if (e.touches.length < 2) { pinch.current = null; isInteracting.current = false; } };
+    vp.addEventListener("touchstart", onStart, { passive: false });
+    vp.addEventListener("touchmove", onMove, { passive: false });
+    vp.addEventListener("touchend", onEnd);
+    return () => {
+      vp.removeEventListener("touchstart", onStart);
+      vp.removeEventListener("touchmove", onMove);
+      vp.removeEventListener("touchend", onEnd);
+    };
+  }, []);
+
+  const renderMiniMap = () => {
+    if (!plazas.length) return null;
+    const MW = 168, MH = 116, pad = 10;
+    const minX = Math.min(...plazas.map((p) => p.x));
+    const minY = Math.min(...plazas.map((p) => p.y));
+    const maxX = Math.max(...plazas.map((p) => p.x + p.w));
+    const maxY = Math.max(...plazas.map((p) => p.y + p.h));
+    const bw = Math.max(1, maxX - minX), bh = Math.max(1, maxY - minY);
+    const mmS = Math.min((MW - pad * 2) / bw, (MH - pad * 2) / bh);
+    const toX = (x) => pad + (x - minX) * mmS;
+    const toY = (y) => pad + (y - minY) * mmS;
+    const vx = (-offset.x) / scale, vy = (-offset.y) / scale;
+    const onClick = (e) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      const wx = (e.clientX - r.left - pad) / mmS + minX;
+      const wy = (e.clientY - r.top - pad) / mmS + minY;
+      setOffset({ x: vpSize.w / 2 - wx * scale, y: vpSize.h / 2 - wy * scale });
+    };
+    return (
+      <div className="absolute top-4 right-4 rounded-xl bg-white/95 backdrop-blur border border-border shadow-soft overflow-hidden" data-testid="plano-minimap">
+        <svg width={MW} height={MH} onClick={onClick} className="cursor-pointer block">
+          {plazas.map((p) => {
+            const occ = Boolean(vehicleByPlaza[p.id]);
+            return (
+              <rect key={p.id} x={toX(p.x)} y={toY(p.y)} width={Math.max(2, p.w * mmS)} height={Math.max(2, p.h * mmS)} rx={2}
+                fill={occ ? zoneColor(p.zona) : "#fff"} stroke={zoneColor(p.zona)} strokeWidth="1" opacity={occ ? 0.9 : 0.5} />
+            );
+          })}
+          <rect x={toX(vx)} y={toY(vy)} width={Math.max(4, (vpSize.w / scale) * mmS)} height={Math.max(4, (vpSize.h / scale) * mmS)}
+            fill="rgba(0,102,177,0.12)" stroke="#0066B1" strokeWidth="1.5" />
+        </svg>
+      </div>
+    );
+  };
+
   // ---------- Acciones de plaza ----------
   const nextName = () => {
     let n = 1;
@@ -349,6 +511,22 @@ export default function Plano() {
     return () => { alive = false; clearTimeout(retry); try { ws && ws.close(); } catch { /* noop */ } };
   }, [cid, qc]);
 
+  const stats = useMemo(() => {
+    const total = plazas.length;
+    const ocupadas = plazas.filter((p) => vehicleByPlaza[p.id]).length;
+    return { total, ocupadas, libres: total - ocupadas, sinPlaza: unassigned.length };
+  }, [plazas, vehicleByPlaza, unassigned]);
+
+  const visiblePlazas = useMemo(() => {
+    const m = 240;
+    const l = (-offset.x) / scale - m, t = (-offset.y) / scale - m;
+    const r = (vpSize.w - offset.x) / scale + m, b = (vpSize.h - offset.y) / scale + m;
+    return plazas.filter((p) =>
+      p.id === selectedId || p.id === highlightId ||
+      (p.x < r && p.x + p.w > l && p.y < b && p.y + p.h > t)
+    );
+  }, [plazas, offset, scale, vpSize, selectedId, highlightId, vehicleByPlaza]);
+
   const selectedPlaza = plazas.find((p) => p.id === selectedId) || null;
   const editing = mode === "edit";
 
@@ -371,6 +549,43 @@ export default function Plano() {
           >
             {editing ? <><Check className="h-4 w-4 mr-2" /> Finalizar edición</> : <><Pencil className="h-4 w-4 mr-2" /> Editar plano</>}
           </Button>
+        </div>
+      </div>
+
+      {/* Estadísticas + buscador inteligente */}
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <StatChip label="Plazas" value={stats.total} testid="stat-total" />
+        <StatChip label="Ocupadas" value={stats.ocupadas} dot="#1B8A4B" testid="stat-ocupadas" />
+        <StatChip label="Libres" value={stats.libres} dot="#5BC2E7" testid="stat-libres" />
+        <StatChip label="Sin plaza" value={stats.sinPlaza} dot="#E7222E" testid="stat-sinplaza" />
+        <div className="relative ml-auto w-full sm:w-72">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-bmw-soft/50 z-10" />
+          <Input
+            value={query}
+            onChange={(e) => runSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && results.length) focusVehicle(results[0]); }}
+            placeholder="Buscar modelo, VIN, matrícula…"
+            className="pl-10 h-11 rounded-xl border-transparent bg-white shadow-soft"
+            data-testid="plano-search-input"
+          />
+          {query && (
+            <div className="absolute z-40 mt-2 w-full rounded-xl bg-white border border-border shadow-card overflow-hidden max-h-72 overflow-y-auto bmw-scroll" data-testid="search-results">
+              {results.length === 0 ? (
+                <p className="px-4 py-3 text-sm text-bmw-soft/60">Sin resultados</p>
+              ) : (
+                results.map((v) => (
+                  <button key={v.id} onClick={() => focusVehicle(v)} data-testid={`search-result-${v.id}`}
+                    className="w-full text-left px-4 py-2.5 hover:bg-bmw-surface flex items-center justify-between gap-3 transition-colors">
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium truncate">{v.modelo} {v.acabado}</span>
+                      <span className="block text-xs text-bmw-soft/60 truncate font-mono">{v.vin_corto || v.matricula || v.vin}</span>
+                    </span>
+                    <span className="text-xs text-bmw-soft/60 shrink-0">{v.plaza || "Sin plaza"}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -399,7 +614,7 @@ export default function Plano() {
             className="absolute top-0 left-0 origin-top-left"
             style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`, width: 4000, height: 4000 }}
           >
-            {plazas.map((p) => (
+            {visiblePlazas.map((p) => (
               <PlazaNode
                 key={p.id}
                 plaza={p}
@@ -407,6 +622,7 @@ export default function Plano() {
                 mode={mode}
                 selected={selectedId === p.id}
                 dropTarget={dropId === p.id}
+                highlight={highlightId === p.id}
               />
             ))}
           </div>
@@ -421,8 +637,11 @@ export default function Plano() {
             </div>
           )}
 
+          {renderMiniMap()}
+
           {/* Controles de zoom */}
           <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+            <button onClick={fitToScreen} className="h-10 w-10 grid place-items-center rounded-xl bg-white border border-border shadow-soft hover:bg-bmw-surface" data-testid="fit-button" title="Ajustar a pantalla"><Frame className="h-4 w-4" /></button>
             <button onClick={() => zoomBtn(1)} className="h-10 w-10 grid place-items-center rounded-xl bg-white border border-border shadow-soft hover:bg-bmw-surface" data-testid="zoom-in"><ZoomIn className="h-4 w-4" /></button>
             <button onClick={() => zoomBtn(-1)} className="h-10 w-10 grid place-items-center rounded-xl bg-white border border-border shadow-soft hover:bg-bmw-surface" data-testid="zoom-out"><ZoomOut className="h-4 w-4" /></button>
           </div>

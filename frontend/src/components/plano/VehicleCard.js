@@ -1,9 +1,10 @@
+import { memo } from "react";
 import CarSilhouette from "./CarSilhouette";
 import { BMW_COLORS, ESTADO_COLORS } from "@/lib/constants";
 
 const colorHex = (name) => BMW_COLORS.find((c) => c.name === name)?.hex || "#8A8D91";
 
-export default function VehicleCard({ vehicle, plazaNombre }) {
+function VehicleCard({ vehicle, plazaNombre }) {
   const hex = colorHex(vehicle.color);
   const est = ESTADO_COLORS[vehicle.estado] || ESTADO_COLORS.Disponible;
 
@@ -35,3 +36,5 @@ export default function VehicleCard({ vehicle, plazaNombre }) {
     </div>
   );
 }
+
+export default memo(VehicleCard);

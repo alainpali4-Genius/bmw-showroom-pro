@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { RotateCw, Maximize2 } from "lucide-react";
 import { zoneColor } from "@/lib/constants";
 import VehicleCard from "./VehicleCard";
 
-export default function PlazaNode({ plaza, vehicle, mode, selected, dropTarget }) {
+function PlazaNode({ plaza, vehicle, mode, selected, dropTarget, highlight }) {
   const accent = zoneColor(plaza.zona);
   const occupied = Boolean(vehicle);
   const edit = mode === "edit";
@@ -22,11 +23,13 @@ export default function PlazaNode({ plaza, vehicle, mode, selected, dropTarget }
       }}
     >
       <div
-        className="relative h-full w-full rounded-2xl transition-shadow duration-150"
+        className={`relative h-full w-full rounded-2xl transition-shadow duration-150 ${highlight ? "plaza-highlight" : ""}`}
         style={{
           border: occupied ? `1.5px solid ${accent}` : `2px dashed ${accent}80`,
           background: occupied ? "#FFFFFF" : `${accent}0D`,
-          boxShadow: dropTarget
+          boxShadow: highlight
+            ? "0 0 0 3px #E7222E, 0 12px 34px rgb(0 0 0 / 0.18)"
+            : dropTarget
             ? `0 0 0 3px ${accent}, 0 8px 30px rgb(0 0 0 / 0.12)`
             : selected
             ? `0 0 0 2px ${accent}`
@@ -77,3 +80,5 @@ export default function PlazaNode({ plaza, vehicle, mode, selected, dropTarget }
     </div>
   );
 }
+
+export default memo(PlazaNode);

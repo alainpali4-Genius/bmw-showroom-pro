@@ -1,4 +1,5 @@
 // Silueta superior premium del vehículo según carrocería, pintada con el color BMW real.
+import { memo } from "react";
 
 const CONFIG = {
   SUV: { len: 210, rx: 20, roof: [58, 152] },
@@ -22,7 +23,7 @@ function darken(hex, amt = 0.5) {
   return `rgb(${r},${g},${b})`;
 }
 
-export default function CarSilhouette({ category, hex = "#8A8D91", className = "" }) {
+function CarSilhouette({ category, hex = "#8A8D91", className = "" }) {
   const cfg = CONFIG[category] || CONFIG.Berlina;
   const W = 120;
   const H = cfg.len;
@@ -76,3 +77,5 @@ export default function CarSilhouette({ category, hex = "#8A8D91", className = "
     </svg>
   );
 }
+
+export default memo(CarSilhouette);
