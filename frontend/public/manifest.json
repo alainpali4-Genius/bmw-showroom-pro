@@ -1,0 +1,9 @@
+{
+  "short_name": "Momentum",
+  "name": "BMW Momentum Showroom",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0066B1",
+  "background_color": "#F5F6F8",
+  "icons": []
+}
