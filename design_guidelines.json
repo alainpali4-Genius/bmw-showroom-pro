@@ -1,0 +1,123 @@
+{
+  "project_name": "BMW Momentum Showroom",
+  "app_type": "Progressive Web App (PWA) / Internal SaaS",
+  "theme": "Light mode primary (to reflect clean, professional software workspace) with high contrast. Use white and light grays for surfaces, black for typography.",
+  "typography": {
+    "primary_font": "Outfit",
+    "secondary_font": "Manrope",
+    "banned_fonts": ["Inter", "Roboto", "Open Sans", "Space Grotesk"],
+    "scale": {
+      "h1": "text-4xl sm:text-5xl font-light tracking-tight",
+      "h2": "text-2xl sm:text-3xl font-medium tracking-tight",
+      "h3": "text-xl sm:text-2xl font-medium",
+      "body": "text-base text-[#2B2B2B] leading-relaxed",
+      "labels": "text-xs font-bold uppercase tracking-[0.2em] text-[#2B2B2B]"
+    },
+    "instructions": "Import Outfit and Manrope via Google Fonts. Use Outfit for headings and primary metrics. Use Manrope for data tables, form inputs, and body text."
+  },
+  "colors": {
+    "brand_primary": "#0066B1",
+    "brand_accent_light_blue": "#5BC2E7",
+    "brand_accent_dark_blue": "#003DA5",
+    "brand_accent_red": "#E7222E",
+    "background_primary": "#FFFFFF",
+    "background_secondary": "#F5F6F8",
+    "text_primary": "#111111",
+    "text_secondary": "#2B2B2B",
+    "rules": [
+      "NEVER use random colors. Stick strictly to this official BMW palette.",
+      "NO Material Design default shadows or colors.",
+      "BMW Blue (#0066B1) is the main action color for primary CTAs.",
+      "BMW M colors (Light Blue, Dark Blue, Red) ONLY for accents, active navigation states, KPI indicators, or tags.",
+      "Backgrounds should be pristine White or Light Gray."
+    ]
+  },
+  "layouts": {
+    "mobile": {
+      "navigation": "Fixed bottom bar `fixed bottom-0 w-full` with 4 main items (Inicio, Stock, Plano, Entregas). Use glassmorphism: `bg-white/90 backdrop-blur-xl border-t border-[#F5F6F8] pb-safe`. NEVER fully transparent.",
+      "sidebar": "Hidden by default, accessible via a menu/hamburger button in the top header for secondary modules (Mobiliario, Estadísticas, Configuración)."
+    },
+    "desktop": {
+      "navigation": "Fixed left sidebar (`w-64` or `w-72`), `bg-[#F5F6F8]` or White with a subtle right border `border-r border-gray-200`. Ample workspace margin on the right.",
+      "workspace": "Max-width containers or fluid full-width depending on module, using generous padding like `p-8` or `p-12`."
+    },
+    "grid_system": "Bento-inspired grid for Dashboard KPIs (`grid-cols-1 md:grid-cols-3 gap-6`), using clean, well-spaced cards."
+  },
+  "components": {
+    "login_screen": {
+      "layout": "Split screen on desktop, stacked on mobile.",
+      "visuals": "Left side (or top on mobile): Premium BMW showroom image. Right side: Clean, minimalist login form.",
+      "elements": ["Email input", "Password input", "Login button (BMW Blue)"]
+    },
+    "app_shell": {
+      "instructions": "Implement responsive shell bridging mobile-first bottom nav and desktop side nav. Content area must scroll independently of nav bars."
+    },
+    "dashboard_kpis": {
+      "style": "Cards with soft shadows (`shadow-[0_8px_30px_rgb(0,0,0,0.04)]`, hover: `shadow-md`), `rounded-xl`, `bg-white`, `border border-[#F5F6F8]`.",
+      "content": "Total vehicles, by status, by location. Use BMW M-colors for micro-indicators (e.g., Red for 'Delivery Pending', Light Blue for 'In Showroom')."
+    },
+    "stock_module": {
+      "list_view": "Clean data table or list cards. High contrast text. Use small pill badges for Status.",
+      "filters": "Top bar or sliding panel for filters (Model, Status, Location) and search.",
+      "vehicle_form": "Grid layout forms using Shadcn inputs. Fields: Marca, Modelo, Motor, Categoría, Color, Código color BMW, VIN, VIN corto, Matrícula, Ubicación, Estado, Cliente, Teléfono, Observaciones."
+    }
+  },
+  "visual_enhancers": {
+    "shadows": "Soft and premium. Base: `shadow-[0_4px_20px_rgb(0,0,0,0.03)]`. Hover: `shadow-[0_8px_30px_rgb(0,0,0,0.06)]`.",
+    "border_radius": "Rounded but structured. Prefer `rounded-xl` or `rounded-2xl` for large cards, `rounded-lg` for inputs/buttons.",
+    "glassmorphism": "Only on fixed navs/headers: `bg-white/80 backdrop-blur-xl backdrop-saturate-150 border-b border-gray-100`. NEVER 100% transparent.",
+    "borders": "1px solid `#F5F6F8` or `#E5E7EB` to delineate areas cleanly."
+  },
+  "motion": {
+    "rules": [
+      "Fluid, smooth animations inspired by automotive interfaces. No jarring or overly bouncy effects.",
+      "Buttons: `transition-colors duration-200 ease-in-out`.",
+      "Cards: `hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300`.",
+      "Page transitions: simple fade-in (`opacity-0` to `opacity-100`)."
+    ]
+  },
+  "icons_and_media": {
+    "icon_library": "@phosphor-icons/react",
+    "icon_style": "Thin or Light weight to match the premium iDrive aesthetic.",
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1778942855297-1c1aa4d01b19",
+        "description": "White BMW car parked indoors in a sleek dark environment. Perfect for the login screen background.",
+        "category": "Login Background"
+      },
+      {
+        "url": "https://images.pexels.com/photos/4141873/pexels-photo-4141873.jpeg",
+        "description": "Red leather BMW interior. Great for generic headers or placeholder visual content.",
+        "category": "Header/Hero"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1553505192-acca7d4509be?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1OTN8MHwxfHNlYXJjaHw0fHxibXclMjBjYXIlMjBtb2Rlcm58ZW58MHx8fHwxNzgzNDE5OTMzfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Blue BMW M series. Good for vehicle placeholders in the stock module.",
+        "category": "Vehicle Placeholder"
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure black/dark gray text passes WCAG AA on white/light gray.",
+    "test_ids": "CRITICAL: All interactive elements, inputs, and KPI cards MUST have `data-testid` (e.g., `data-testid='login-submit-button'`, `data-testid='kpi-total-stock'`).",
+    "focus": "Focus states must use BMW Blue outline: `focus:ring-2 focus:ring-[#0066B1] focus:outline-none focus:ring-offset-1`."
+  },
+  "instructions_to_main_agent": [
+    "Read this JSON carefully before building any component. Your target is .js/.jsx files.",
+    "Initialize Tailwind config with the exact color hex codes provided under 'colors'.",
+    "Set up layout shell first: A responsive component that renders a bottom bar on mobile and a side nav on desktop.",
+    "Use Shadcn UI for forms, tables, and dropdowns, but OVERRIDE their default styles (colors, border-radius) to match this premium BMW aesthetic.",
+    "For the vehicle form, construct a grid layout for the numerous required fields.",
+    "Ensure all interactive elements have data-testid attributes.",
+    "Remember: The design must feel like BMW iDrive—clean, spacious, legible, premium. Avoid clutter."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid generic 'AI slop' aesthetics. Do not center everything. Left-align text for readability.",
+    "DO NOT apply universal transitions like `transition: all`. Target specific properties.",
+    "Use 2-3x more spacing than default. `p-8` is a good baseline for containers.",
+    "Use `sonner` for toast notifications.",
+    "Never use AI emoji characters for icons.",
+    "Prioritize re-using components from src/components/ui.",
+    "Ensure glassmorphism is legible (no pure transparent backgrounds over content)."
+  ]
+}
