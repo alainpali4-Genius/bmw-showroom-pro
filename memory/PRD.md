@@ -33,6 +33,15 @@ PWA profesional para un concesionario oficial BMW que centraliza la gestión de 
 - Agrupación por zonas (Exposición, Stock Exposición, Taller, Terraza, Entreplanta, Entregas) con color de acento.
 - Verificado: 18/18 tests backend Plano + E2E frontend 100%.
 
+### Mejoras Plano (2026-07-22)
+- Mini-mapa con recuadro de viewport y click para desplazar.
+- Botón «Ajustar a pantalla» + auto-encuadre al cargar.
+- Zoom por pellizco en móvil solo en modo edición (bloqueado en modo normal).
+- Contadores: plazas totales / ocupadas / libres / vehículos sin plaza.
+- Buscador inteligente (modelo, VIN, VIN corto, matrícula): auto-centra + zoom + resalta la tarjeta ~3s; con varios resultados muestra lista para elegir; con vehículo sin plaza avisa. Auto-foco con debounce.
+- Optimización de rendimiento: culling de plazas fuera del viewport + memoización (PlazaNode/VehicleCard/CarSilhouette).
+- Verificado: E2E frontend 9/9.
+
 ## Backlog priorizado (pendiente — esperar instrucciones del usuario)
 - **P0 — Plano de Exposición**: editor libre (plazas ilimitadas, mover/redimensionar/rotar, zonas, zoom/pan, autosave), tarjetas premium con silueta por carrocería pintada con color BMW, drag&drop de vehículos entre plazas con actualización de ubicación.
 - **P1 — Entregas**: vista automática de vehículos con ubicación "Entrega" y gestión del proceso.

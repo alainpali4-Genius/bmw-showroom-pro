@@ -54,6 +54,7 @@ export default function Plano() {
   const [results, setResults] = useState([]);
   const pinch = useRef(null);
   const highlightTimer = useRef(null);
+  const searchTimer = useRef(null);
   const fitted = useRef(false);
 
   // Refs espejo para handlers de ventana
@@ -325,6 +326,7 @@ export default function Plano() {
   }, [vpSize]);
 
   const focusVehicle = (v) => {
+    clearTimeout(searchTimer.current);
     setResults([]); setQuery("");
     const plaza = plazasRef.current.find((p) => p.id === v.plaza_id);
     if (!plaza) {
@@ -684,6 +686,12 @@ export default function Plano() {
         onSaved={() => {
           qc.invalidateQueries({ queryKey: ["vehicles-all"] });
           qc.invalidateQueries({ queryKey: ["stats"] });
+        }}
+      />
+    </div>
+  );
+}
+ats"] });
         }}
       />
     </div>
