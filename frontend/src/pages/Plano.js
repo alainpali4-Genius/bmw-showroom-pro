@@ -341,8 +341,8 @@ export default function Plano() {
             }
           } catch { /* noop */ }
         };
-        ws.onclose = () => { if (alive) retry = setTimeout(connect, 3000); };
-        ws.onerror = () => { try { ws.close(); } catch { /* noop */ } };
+        ws.onclose = () => { if (alive) { clearTimeout(retry); retry = setTimeout(connect, 3000); } };
+        ws.onerror = () => { /* onclose gestiona la reconexión */ };
       } catch { /* noop */ }
     };
     connect();

@@ -23,6 +23,16 @@ PWA profesional para un concesionario oficial BMW que centraliza la gestión de 
 - Catálogo de colores oficiales BMW; VIN corto auto (últimos 7).
 - Verificado: 16/16 tests backend + E2E frontend 100%.
 
+## Implementado (2026-07-22) — Fase 2 — Plano de Exposición
+- Editor libre estilo bodas.net (sin cuadrícula fija): crear, eliminar, duplicar, mover, redimensionar y rotar plazas.
+- Zoom (rueda + botones) y pan; guardado automático (PUT /plano/save autoritativo); undo/redo; alinear.
+- Modo edición vs modo normal (en normal solo se mueven vehículos; plazas protegidas).
+- Drag & drop de vehículos entre plazas y desde bandeja "Sin plaza"; al soltar se actualiza plaza_id, plaza y ubicación (zona→ubicación) en BD.
+- Tarjetas premium con silueta superior por carrocería (SUV, Berlina, Touring, Coupé, Gran Coupé, Compact, Cabrio, Roadster, Eléctrico) pintada con el color oficial BMW; muestran modelo, motor, VIN corto, plaza, color y estado. Plaza vacía = solo contorno + nombre. Click abre ficha completa.
+- Sincronización en tiempo real vía WebSocket (/api/ws/plano) con fallback de polling 20s.
+- Agrupación por zonas (Exposición, Stock Exposición, Taller, Terraza, Entreplanta, Entregas) con color de acento.
+- Verificado: 18/18 tests backend Plano + E2E frontend 100%.
+
 ## Backlog priorizado (pendiente — esperar instrucciones del usuario)
 - **P0 — Plano de Exposición**: editor libre (plazas ilimitadas, mover/redimensionar/rotar, zonas, zoom/pan, autosave), tarjetas premium con silueta por carrocería pintada con color BMW, drag&drop de vehículos entre plazas con actualización de ubicación.
 - **P1 — Entregas**: vista automática de vehículos con ubicación "Entrega" y gestión del proceso.
