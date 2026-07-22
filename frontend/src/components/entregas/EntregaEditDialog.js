@@ -38,7 +38,7 @@ export default function EntregaEditDialog({ open, onOpenChange, item, onSaved })
     }
   }, [open, item]);
 
-  if (!form) return null;
+  if (!form || !item) return null;
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async () => {

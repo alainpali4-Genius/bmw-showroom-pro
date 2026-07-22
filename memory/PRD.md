@@ -42,6 +42,16 @@ PWA profesional para un concesionario oficial BMW que centraliza la gestión de 
 - Optimización de rendimiento: culling de plazas fuera del viewport + memoización (PlazaNode/VehicleCard/CarSilhouette).
 - Verificado: E2E frontend 9/9.
 
+## Implementado (2026-07-22) — Fase 3 — Entregas
+- Tablero tipo Kanban (no tabla) con 4 columnas por estado de preparación: Pendiente, En preparación, Listo para entregar, Entregado.
+- Tarjetas premium (marca, modelo, motor, color BMW + swatch + silueta, VIN corto, cliente, teléfono, fecha y hora previstas, comercial, observaciones).
+- Drag & Drop de tarjetas entre estados (pointer events) con guardado; click corto abre diálogo de edición.
+- Alimentación automática: aparecen los vehículos con ubicación «Entrega» (auto-alta en Pendiente) y desaparecen al cambiar de ubicación.
+- KPIs: Entregas de hoy, Pendientes, Listas, Entregadas.
+- Buscador instantáneo (cliente, VIN, matrícula, modelo) + filtros (fecha, estado, modelo, comercial, cliente) + limpiar.
+- Backend: colección `entregas` separada (no modifica Stock); GET auto-provisiona, PUT valida estado y reparte campos entre entrega y vehículo.
+- Verificado: 8/8 tests backend + E2E frontend (bug de diálogo null corregido).
+
 ## Backlog priorizado (pendiente — esperar instrucciones del usuario)
 - **P0 — Plano de Exposición**: editor libre (plazas ilimitadas, mover/redimensionar/rotar, zonas, zoom/pan, autosave), tarjetas premium con silueta por carrocería pintada con color BMW, drag&drop de vehículos entre plazas con actualización de ubicación.
 - **P1 — Entregas**: vista automática de vehículos con ubicación "Entrega" y gestión del proceso.
