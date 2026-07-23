@@ -68,9 +68,17 @@ export default function Entregas() {
     };
   }, [items]);
 
+  const dateFlag = (item) => {
+    const t = todayStr();
+    if (!item.fecha_entrega) return null;
+    if (item.fecha_entrega === t) return "hoy";
+    if (item.fecha_entrega < t && item.estado_preparacion !== "Entregado") return "vencida";
+    return null;
+  };
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    return items.filter((i) => {
+    const list = items.filter((i) => {
       if (s) {
         const hay = [i.cliente, i.vin, i.matricula, i.modelo].some((f) => (f || "").toLowerCase().includes(s));
         if (!hay) return false;
@@ -81,6 +89,12 @@ export default function Entregas() {
       if (filters.comercial && i.comercial !== filters.comercial) return false;
       if (filters.cliente && !(i.cliente || "").toLowerCase().includes(filters.cliente.toLowerCase())) return false;
       return true;
+    });
+    return list.sort((a, b) => {
+      const fa = a.fecha_entrega || "9999-12-31", fb = b.fecha_entrega || "9999-12-31";
+      if (fa !== fb) return fa < fb ? -1 : 1;
+      const ha = a.hora_entrega || "99:99", hb = b.hora_entrega || "99:99";
+      return ha < hb ? -1 : ha > hb ? 1 : 0;
     });
   }, [items, q, filters]);
 
@@ -223,7 +237,7 @@ export default function Entregas() {
                 <span className="text-xs font-semibold text-bmw-soft/60 tabular-nums">{col.cards.length}</span>
               </div>
               <div className="space-y-3">
-                {col.cards.map((item) => <EntregaCard key={item.id} item={item} dragging={ghost?.item?.id === item.id} />)}
+                {col.cards.map((item) => <EntregaCard key={item.id} item={item} dragging={ghost?.item?.id === item.id} flag={dateFlag(item)} />)}
                 {col.cards.length === 0 && (
                   <p className="text-xs text-bmw-soft/40 text-center py-8">Arrastra tarjetas aquí</p>
                 )}

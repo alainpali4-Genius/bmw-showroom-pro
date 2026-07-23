@@ -5,15 +5,17 @@ import { BMW_COLORS, ESTADOS_ENTREGA } from "@/lib/constants";
 
 const colorHex = (name) => BMW_COLORS.find((c) => c.name === name)?.hex || "#8A8D91";
 
-function EntregaCard({ item, dragging }) {
+function EntregaCard({ item, dragging, flag }) {
   const hex = colorHex(item.color);
   const est = ESTADOS_ENTREGA.find((e) => e.name === item.estado_preparacion) || ESTADOS_ENTREGA[0];
+  const ring = flag === "hoy" ? "0 0 0 2px #0066B1" : flag === "vencida" ? "0 0 0 2px #E7222E" : undefined;
 
   return (
     <div
       data-entrega-id={item.id}
+      data-flag={flag || ""}
       className={`rounded-2xl bg-white border border-border shadow-soft hover:shadow-card transition-shadow cursor-grab active:cursor-grabbing touch-none select-none ${dragging ? "opacity-90 rotate-1" : ""}`}
-      style={{ borderTop: `3px solid ${est.color}` }}
+      style={{ borderTop: `3px solid ${est.color}`, boxShadow: ring }}
     >
       <div className="p-3.5">
         <div className="flex items-start justify-between gap-2">
@@ -27,6 +29,20 @@ function EntregaCard({ item, dragging }) {
             <CarSilhouette category={item.categoria} hex={hex} className="h-full w-auto" />
           </div>
         </div>
+
+        {flag && (
+          <div className="mt-2">
+            {flag === "hoy" ? (
+              <span data-testid="badge-hoy" className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "#0066B1" }}>
+                HOY
+              </span>
+            ) : (
+              <span data-testid="badge-vencida" className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: "#E7222E" }}>
+                VENCIDA
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="mt-2 flex items-center gap-2 flex-wrap text-[11px]">
           <span className="inline-flex items-center gap-1.5">

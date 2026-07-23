@@ -52,6 +52,11 @@ PWA profesional para un concesionario oficial BMW que centraliza la gestión de 
 - Backend: colección `entregas` separada (no modifica Stock); GET auto-provisiona, PUT valida estado y reparte campos entre entrega y vehículo.
 - Verificado: 8/8 tests backend + E2E frontend (bug de diálogo null corregido).
 
+### Mejora Entregas (2026-07-23)
+- Resaltado automático: entregas con fecha HOY (anillo + badge azul) y VENCIDAS (anillo + badge rojo; excluye ya entregadas).
+- Orden siempre por fecha y hora previstas (ascendente; sin fecha al final).
+- Verificado por captura: HOY azul, VENCIDA roja, KPI hoy correcto, sin crash al guardar.
+
 ## Backlog priorizado (pendiente — esperar instrucciones del usuario)
 - **P0 — Plano de Exposición**: editor libre (plazas ilimitadas, mover/redimensionar/rotar, zonas, zoom/pan, autosave), tarjetas premium con silueta por carrocería pintada con color BMW, drag&drop de vehículos entre plazas con actualización de ubicación.
 - **P1 — Entregas**: vista automática de vehículos con ubicación "Entrega" y gestión del proceso.
