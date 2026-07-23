@@ -3,6 +3,7 @@ import bcrypt
 import jwt
 from datetime import datetime, timezone, timedelta
 from bson import ObjectId
+from typing import Optional
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from pydantic import BaseModel, EmailStr
 
@@ -59,6 +60,7 @@ def public_user(user: dict) -> dict:
         "email": user["email"],
         "name": user.get("name", ""),
         "role": user.get("role", "staff"),
+        "photo": user.get("photo", ""),
     }
 
 
@@ -155,6 +157,46 @@ async def refresh(request: Request, response: Response):
         return public_user(user)
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Token inválido")
+
+
+class ProfileBody(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    photo: Optional[str] = None
+
+
+class PasswordBody(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@auth_router.put("/profile")
+async def update_profile(body: ProfileBody, user: dict = Depends(get_current_user)):
+    patch = {}
+    if body.name is not None:
+        patch["name"] = body.name
+    if body.photo is not None:
+        patch["photo"] = body.photo
+    if body.email is not None:
+        new_email = body.email.lower()
+        if new_email != user["email"]:
+            if await db.users.find_one({"email": new_email}):
+                raise HTTPException(status_code=400, detail="El email ya está en uso")
+            patch["email"] = new_email
+    if patch:
+        await db.users.update_one({"_id": user["_id"]}, {"$set": patch})
+    updated = await db.users.find_one({"_id": user["_id"]})
+    return public_user(updated)
+
+
+@auth_router.post("/change-password")
+async def change_password(body: PasswordBody, user: dict = Depends(get_current_user)):
+    if not verify_password(body.current_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="La contraseña actual no es correcta")
+    if len(body.new_password) < 6:
+        raise HTTPException(status_code=400, detail="La nueva contraseña debe tener al menos 6 caracteres")
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"password_hash": hash_password(body.new_password)}})
+    return {"ok": True}
 
 
 async def seed_admin():
